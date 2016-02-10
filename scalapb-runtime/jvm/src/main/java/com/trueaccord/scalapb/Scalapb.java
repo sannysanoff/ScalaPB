@@ -1982,13 +1982,22 @@ public final class Scalapb {
    * Extension number officially assigned by protobuf-global-extension-registry&#64;google.com
    * </pre>
    */
-  public static final
-    com.google.protobuf.GeneratedMessage.GeneratedExtension<
-      com.google.protobuf.DescriptorProtos.FileOptions,
-      com.trueaccord.scalapb.Scalapb.ScalaPbOptions> options = com.google.protobuf.GeneratedMessage
-          .newFileScopedGeneratedExtension(
-        com.trueaccord.scalapb.Scalapb.ScalaPbOptions.class,
-        com.trueaccord.scalapb.Scalapb.ScalaPbOptions.getDefaultInstance());
+  public static final com.google.protobuf.GeneratedMessage.GeneratedExtension<
+          com.google.protobuf.DescriptorProtos.FileOptions,
+          com.trueaccord.scalapb.Scalapb.ScalaPbOptions>
+          options =
+          com.google.protobuf.GeneratedMessage
+                  .newFileScopedGeneratedExtension(
+                          com.trueaccord.scalapb.Scalapb.ScalaPbOptions.class,
+                          com.trueaccord.scalapb.Scalapb.ScalaPbOptions.getDefaultInstance());
+  public static final com.google.protobuf.GeneratedMessage.GeneratedExtension<
+          com.google.protobuf.DescriptorProtos.FileOptions,
+          com.trueaccord.scalapb.Scalapb.ScalaPbOptions>
+          fzjavaOptions =
+          com.google.protobuf.GeneratedMessage
+                  .newFileScopedGeneratedExtension(
+                          com.trueaccord.scalapb.Scalapb.ScalaPbOptions.class,
+                          com.trueaccord.scalapb.Scalapb.ScalaPbOptions.getDefaultInstance());
   public static final int MESSAGE_FIELD_NUMBER = 1020;
   /**
    * <code>extend .google.protobuf.MessageOptions { ... }</code>

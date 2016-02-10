@@ -25,6 +25,15 @@ organization in ThisBuild := "com.trueaccord.scalapb"
 resolvers in ThisBuild +=
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
+resolvers in ThisBuild += Resolver.url(
+  "sbt-plugin-releases",
+  new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/")
+)(Resolver.ivyStylePatterns)
+
+//addSbtPlugin("com.github.retronym" % "sbt-onejar" % "0.7")
+
+//mainClass in oneJar := Some("com.trueaccord.scalapb.ScalePBC")
+
 releaseCrossBuild := true
 
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
