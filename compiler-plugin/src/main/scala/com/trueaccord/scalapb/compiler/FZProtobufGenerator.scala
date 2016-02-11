@@ -827,9 +827,11 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .print(message.fields) {
         case (field, p) => {
           p.add(s"public ${field.javaTypeName} get${field.upperJavaName}() {return ${field.getName};} ")
-            .add(s"public void set${field.upperJavaName}(${field.javaTypeName} val) {this.${field.getName} = val; _has_${field.getName} = true;} ")
+            .when(field.isRepeated || !field.isOptional)(p =>
+              p.add(s"public void set${field.upperJavaName}(${field.javaTypeName} val) {this.${field.getName} = val;} "))
             .when(field.isOptional)(p =>
-              p.add(s"public boolean has${field.upperJavaName}() {return _has_${field.getName};} "))
+              p.add(s"public boolean has${field.upperJavaName}() {return _has_${field.getName};} ")
+               .add(s"public void set${field.upperJavaName}(${field.javaTypeName} val) {this.${field.getName} = val; _has_${field.getName} = true;} "))
             .when(field.isRepeated)(p =>
               p.add(s"public void add${field.upperJavaName}(${field.singleJavaTypeName} item) {this.${field.getName}.add(item);} "))
         }
@@ -916,7 +918,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   }
 
 
-  val javaImportList = Seq("import java.util.ArrayList","java.io.IOException","com.ponderingpanda.protobuf.*")
+  val javaImportList = Seq("java.util.ArrayList","java.io.IOException","com.ponderingpanda.protobuf.*")
 
   def javaFileHeader(file: FileDescriptor): FunctionalPrinter = {
     new FunctionalPrinter().addM(
@@ -928,7 +930,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       }
           |
          |${
-        if (file.scalaPackageName.nonEmpty) ("package " + file.scalaPackageName) else ""
+        if (file.scalaPackageName.nonEmpty) ("package " + file.scalaPackageName+";") else ""
       }
           |
          |""")
