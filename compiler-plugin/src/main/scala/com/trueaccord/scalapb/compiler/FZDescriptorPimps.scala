@@ -167,7 +167,7 @@ trait FZDescriptorPimps {
       case FieldDescriptor.JavaType.FLOAT => "float"
       case FieldDescriptor.JavaType.DOUBLE => "double"
       case FieldDescriptor.JavaType.BOOLEAN => "boolean"
-      case FieldDescriptor.JavaType.BYTE_STRING => "com.google.protobuf.ByteString"
+      case FieldDescriptor.JavaType.BYTE_STRING => "byte[]"
       case FieldDescriptor.JavaType.STRING => "String"
       case FieldDescriptor.JavaType.MESSAGE => fd.getMessageType.scalaTypeName
       case FieldDescriptor.JavaType.ENUM => "int" // fd.getEnumType.scalaTypeName
