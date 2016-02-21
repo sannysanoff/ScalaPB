@@ -46,7 +46,6 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   }.mkString("\"", "", "\"")
 
 
-
   def javaToScalaConversion(field: FieldDescriptor) = {
     val baseValueConversion = field.getJavaType match {
       case FieldDescriptor.JavaType.INT => MethodApplication("intValue")
@@ -117,7 +116,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
     }
   }
 
-  def defaultValue(field: FieldDescriptor) : String = field.getJavaType match {
+  def defaultValue(field: FieldDescriptor): String = field.getJavaType match {
     case FieldDescriptor.JavaType.ENUM => "0"
     case FieldDescriptor.JavaType.INT => "0"
     case FieldDescriptor.JavaType.LONG => "0"
@@ -130,7 +129,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   def printMessage(topLevel: Boolean)(message: Descriptor,
                                       printer: FunctionalPrinter): FunctionalPrinter = {
     printer
-      .add(s"public ${if(topLevel) "" else "static "}class ${message.nameSymbol} implements Message, java.io.Serializable {")
+      .add(s"public ${if (topLevel) "" else "static "}class ${message.nameSymbol} implements Message, java.io.Serializable {")
       .indent
 
       .print(message.fields) {
@@ -140,23 +139,23 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
         }
       }
 
-        .indent
+      .indent
       .print(message.getEnumTypes)(printEnumNoClass)
       .print(message.nestedTypes)(printMessage(topLevel = false))
-        .outdent
+      .outdent
 
       .print(message.fields) {
         case (field, p) => {
-          p.add(s"public ${field.javaTypeName} get${field.upperJavaName}${if (field.isRepeated)"ArrayList" else ""}() {return ${field.getName};} ")
+          p.add(s"public ${field.javaTypeName} get${field.upperJavaName}${if (field.isRepeated) "ArrayList" else ""}() {return ${field.getName};} ")
             .when(field.isRepeated)(p => p
               .add(s"public ${field.singleJavaTypeName} get${field.upperJavaName}(int i) {return ${field.getName}.get(i);} ")
             )
             .when(field.isRepeated || !field.isOptional)(p =>
-              p.add(s"public void set${field.upperJavaName}${if (field.isRepeated)"ArrayList" else ""}(${field.javaTypeName} val) {this.${field.getName} = val;} "))
+              p.add(s"public void set${field.upperJavaName}${if (field.isRepeated) "ArrayList" else ""}(${field.javaTypeName} val) {this.${field.getName} = val;} "))
             .when(field.isOptional)(p =>
               p.add(s"public boolean has${field.upperJavaName}() {return _has_${field.getName};} ")
                 .add(s"public void clear${field.upperJavaName}() {this.${field.getName} = ${defaultValue(field)}; _has_${field.getName} = false;} ")
-               .add(s"public void set${field.upperJavaName}(${field.javaTypeName} val) {this.${field.getName} = val; _has_${field.getName} = true;} "))
+                .add(s"public void set${field.upperJavaName}(${field.javaTypeName} val) {this.${field.getName} = val; _has_${field.getName} = true;} "))
             .when(field.isRepeated)(p =>
               p.add(s"public void add${field.upperJavaName}(${field.singleJavaTypeName} item) {this.${field.getName}.add(item);} ")
                 .add(s"public int get${field.upperJavaName}Count() {return this.${field.getName}.size();} ")
@@ -213,11 +212,11 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
             .add(s"{${field.singleJavaTypeName} message = new ${field.singleJavaTypeName}();")
             .add("in.readMessage(message);")
             .add(s"add${field.upperJavaName}(message);}")
-              .add("break;")
+            .add("break;")
           )
           .when(field.isRepeated && field.getJavaType != FieldDescriptor.JavaType.MESSAGE)(p => p
             .add(s"add${field.upperJavaName}(in.read${Types.capitalizedType(field.getType)}());")
-              .add("break;")
+            .add("break;")
           )
           .outdent
       }
@@ -229,19 +228,17 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .outdent
       .add("}")
 
-        .addM(
-          s"""
-             |public static ${message.nameSymbol} fromBytes(byte[] in) throws EncodingException {
-             |    ${message.nameSymbol} message = new ${message.nameSymbol}();
-             |    ProtoUtil.messageFromBytes(in, message);
-             |    return message;
-             |}
-             |
-             |public byte[] toBytes() throws EncodingException {
-             |    return ProtoUtil.messageToBytes(this);
-             |}
-             |
-             |
+      .addM(
+        s"""
+           |public static ${message.nameSymbol} fromBytes(byte[] in) throws EncodingException {
+           |    ${message.nameSymbol} message = new ${message.nameSymbol}();
+           |    ProtoUtil.messageFromBytes(in, message);
+           |    return message;
+           |}
+           |
+           |public byte[] toBytes() throws EncodingException {
+           |    return ProtoUtil.messageToBytes(this);
+           |}
            """.stripMargin)
 
       .outdent
@@ -249,21 +246,18 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   }
 
 
-  val javaImportList = Seq("java.util.ArrayList","java.io.IOException","com.ponderingpanda.protobuf.*")
+  val javaImportList = Seq("java.util.ArrayList", "java.io.IOException", "com.ponderingpanda.protobuf.*")
 
   def javaFileHeader(file: FileDescriptor): FunctionalPrinter = {
     new FunctionalPrinter().addM(
-      s"""// Generated by the FZJava Plugin for the Protocol Buffer Compiler.
-          |// Do not edit!
-          |//
-          |// Protofile syntax: ${
-        file.getSyntax.toString
-      }
-          |
-         |${
-        if (file.scalaPackageName.nonEmpty) ("package " + file.scalaPackageName+";") else ""
-      }
-          |
+      s"""
+         |// Generated by the FZJava Plugin for the Protocol Buffer Compiler.
+         |// Do not edit!
+         |//
+         |// Protofile syntax: ${file.getSyntax.toString}
+         |
+         |${if (file.scalaPackageName.nonEmpty) "package " + file.scalaPackageName + ";" else ""}
+         |
          |""")
       .print(javaImportList) {
         case (i, printer) => printer.add(s"import $i;")

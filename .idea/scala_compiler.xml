@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ScalaCompilerConfiguration">
+    <option name="incrementalityType" value="SBT" />
+    <profile name="SBT 1" modules="runtimeJS">
+      <parameters>
+        <parameter value="-target:jvm-1.7" />
+      </parameters>
+      <plugins>
+        <plugin path="$USER_HOME$/.ivy2/cache/org.scala-js/scalajs-compiler_2.11.7/jars/scalajs-compiler_2.11.7-0.6.5.jar" />
+      </plugins>
+    </profile>
+    <profile name="SBT 2" modules="root,compilerPlugin,proptest,grpcRuntime,runtimeJVM,scalapbc">
+      <parameters>
+        <parameter value="-target:jvm-1.7" />
+      </parameters>
+    </profile>
+  </component>
+</project>

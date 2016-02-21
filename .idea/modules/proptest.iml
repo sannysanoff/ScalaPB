@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id="proptest" external.linked.project.path="$MODULE_DIR$/../../proptest" external.root.project.path="$MODULE_DIR$/../.." external.system.id="SBT" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/../../proptest/target/scala-2.11/classes" />
+    <output-test url="file://$MODULE_DIR$/../../proptest/target/scala-2.11/test-classes" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../../proptest">
+      <sourceFolder url="file://$MODULE_DIR$/../../proptest/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../proptest/src/main/scala" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../proptest/src/main/scala-2.11" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../proptest/target/scala-2.11/src_managed/main" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../proptest/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../proptest/src/test/scala" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../proptest/src/test/scala-2.11" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../proptest/target/scala-2.11/src_managed/test" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../proptest/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../proptest/target/scala-2.11/resource_managed/main" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../proptest/src/test/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../proptest/target/scala-2.11/resource_managed/test" type="java-test-resource" />
+      <excludeFolder url="file://$MODULE_DIR$/../../proptest/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="compilerPlugin" exported="" />
+    <orderEntry type="module" module-name="grpcRuntime" exported="" />
+    <orderEntry type="module" module-name="runtimeJVM" exported="" />
+    <orderEntry type="library" name="SBT: com.fasterxml.jackson.core:jackson-core:2.1.3:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.github.os72:protoc-jar:3.0.0-b1:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.google.auth:google-auth-library-credentials:0.3.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.google.auth:google-auth-library-oauth2-http:0.3.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.google.code.findbugs:jsr305:3.0.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.google.guava:guava:18.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.google.http-client:google-http-client:1.19.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.google.http-client:google-http-client-jackson2:1.19.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.google.protobuf:protobuf-java:3.0.0-beta-2:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.google.protobuf.nano:protobuf-javanano:3.0.0-alpha-4:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.lihaoyi:fastparse-utils_2.11:0.3.4:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.lihaoyi:fastparse_2.11:0.3.4:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.squareup.okhttp:okhttp:2.4.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.squareup.okio:okio:1.4.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.trueaccord.lenses:lenses_2.11:0.4.4:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.trueaccord.scalapb:protoc-bridge_2.11:0.1.4:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.twitter:hpack:0.10.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: commons-codec:commons-codec:1.3:jar" level="project" />
+    <orderEntry type="library" name="SBT: commons-logging:commons-logging:1.1.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.grpc:grpc-all:0.9.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.grpc:grpc-auth:0.9.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.grpc:grpc-core:0.9.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.grpc:grpc-netty:0.9.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.grpc:grpc-okhttp:0.9.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.grpc:grpc-protobuf:0.9.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.grpc:grpc-protobuf-nano:0.9.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.grpc:grpc-stub:0.9.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.netty:netty-buffer:4.1.0.Beta6:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.netty:netty-codec:4.1.0.Beta6:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.netty:netty-codec-http:4.1.0.Beta6:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.netty:netty-codec-http2:4.1.0.Beta6:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.netty:netty-common:4.1.0.Beta6:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.netty:netty-handler:4.1.0.Beta6:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.netty:netty-resolver:4.1.0.Beta6:jar" level="project" />
+    <orderEntry type="library" name="SBT: io.netty:netty-transport:4.1.0.Beta6:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.httpcomponents:httpclient:4.0.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.httpcomponents:httpcore:4.0.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scala-lang:scala-compiler:2.11.7:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scala-lang:scala-library:2.11.7:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scala-lang:scala-reflect:2.11.7:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scala-lang.modules:scala-parser-combinators_2.11:1.0.4:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scala-lang.modules:scala-xml_2.11:1.0.4:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="SBT: org.scala-sbt:test-interface:1.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="SBT: org.scalacheck:scalacheck_2.11:1.12.4:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="SBT: org.scalatest:scalatest_2.11:2.2.5:jar" level="project" />
+  </component>
+</module>

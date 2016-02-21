@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/compilerPlugin.iml" filepath="$PROJECT_DIR$/.idea/modules/compilerPlugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/compilerPlugin-build.iml" filepath="$PROJECT_DIR$/.idea/modules/compilerPlugin-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/grpcRuntime.iml" filepath="$PROJECT_DIR$/.idea/modules/grpcRuntime.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/grpcRuntime-build.iml" filepath="$PROJECT_DIR$/.idea/modules/grpcRuntime-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/proptest.iml" filepath="$PROJECT_DIR$/.idea/modules/proptest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/proptest-build.iml" filepath="$PROJECT_DIR$/.idea/modules/proptest-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/root.iml" filepath="$PROJECT_DIR$/.idea/modules/root.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/root-build.iml" filepath="$PROJECT_DIR$/.idea/modules/root-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/runtimeJS.iml" filepath="$PROJECT_DIR$/.idea/modules/runtimeJS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/runtimeJS-build.iml" filepath="$PROJECT_DIR$/.idea/modules/runtimeJS-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/runtimeJVM.iml" filepath="$PROJECT_DIR$/.idea/modules/runtimeJVM.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/runtimeJVM-build.iml" filepath="$PROJECT_DIR$/.idea/modules/runtimeJVM-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scalapb-runtime-sources.iml" filepath="$PROJECT_DIR$/.idea/modules/scalapb-runtime-sources.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scalapbc.iml" filepath="$PROJECT_DIR$/.idea/modules/scalapbc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/scalapbc-build.iml" filepath="$PROJECT_DIR$/.idea/modules/scalapbc-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shared-sources.iml" filepath="$PROJECT_DIR$/.idea/modules/shared-sources.iml" />
+    </modules>
+  </component>
+</project>

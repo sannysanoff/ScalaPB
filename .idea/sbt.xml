@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ScalaSbtSettings">
+    <option name="linkedExternalProjectsSettings">
+      <SbtProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="jdk" value="1.8" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/compiler-plugin" />
+            <option value="$PROJECT_DIR$/compiler-plugin/project" />
+            <option value="$PROJECT_DIR$/project" />
+            <option value="$PROJECT_DIR$/proptest" />
+            <option value="$PROJECT_DIR$/proptest/project" />
+            <option value="$PROJECT_DIR$/protobuf" />
+            <option value="$PROJECT_DIR$/scalapb-runtime-grpc" />
+            <option value="$PROJECT_DIR$/scalapb-runtime-grpc/project" />
+            <option value="$PROJECT_DIR$/scalapb-runtime/js" />
+            <option value="$PROJECT_DIR$/scalapb-runtime/js/project" />
+            <option value="$PROJECT_DIR$/scalapb-runtime/jvm" />
+            <option value="$PROJECT_DIR$/scalapb-runtime/jvm/project" />
+            <option value="$PROJECT_DIR$/scalapb-runtime/shared" />
+            <option value="$PROJECT_DIR$/scalapbc" />
+            <option value="$PROJECT_DIR$/scalapbc/project" />
+          </set>
+        </option>
+        <option name="sbtVersion" value="0.13.9" />
+        <option name="useAutoImport" value="true" />
+        <option name="useOurOwnAutoImport" value="true" />
+        <option name="myModules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/compiler-plugin" />
+            <option value="$PROJECT_DIR$/compiler-plugin/project" />
+            <option value="$PROJECT_DIR$/project" />
+            <option value="$PROJECT_DIR$/proptest" />
+            <option value="$PROJECT_DIR$/proptest/project" />
+            <option value="$PROJECT_DIR$/protobuf" />
+            <option value="$PROJECT_DIR$/scalapb-runtime-grpc" />
+            <option value="$PROJECT_DIR$/scalapb-runtime-grpc/project" />
+            <option value="$PROJECT_DIR$/scalapb-runtime/js" />
+            <option value="$PROJECT_DIR$/scalapb-runtime/js/project" />
+            <option value="$PROJECT_DIR$/scalapb-runtime/jvm" />
+            <option value="$PROJECT_DIR$/scalapb-runtime/jvm/project" />
+            <option value="$PROJECT_DIR$/scalapb-runtime/shared" />
+            <option value="$PROJECT_DIR$/scalapbc" />
+            <option value="$PROJECT_DIR$/scalapbc/project" />
+          </set>
+        </option>
+      </SbtProjectSettings>
+    </option>
+  </component>
+</project>

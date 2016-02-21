@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="SBT: io.grpc:grpc-core:0.9.0:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/io.grpc/grpc-core/jars/grpc-core-0.9.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/io.grpc/grpc-core/srcs/grpc-core-0.9.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
