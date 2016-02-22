@@ -129,6 +129,9 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   def printMessage(topLevel: Boolean)(message: Descriptor,
                                       printer: FunctionalPrinter): FunctionalPrinter = {
     printer
+      .add(s"/**")
+      .add(s"  * ${message.getName}")
+      .add(s"  */")
       .add(s"public ${if (topLevel) "" else "static "}class ${message.nameSymbol} implements Message, java.io.Serializable {")
       .indent
 
@@ -138,6 +141,39 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
             .when(field.isOptional)(p => p.add(s"protected boolean _has_${field.getName};"))
         }
       }
+
+      .add("/**")
+      .add(" * Default constructor w/o parameters")
+      .add(" */")
+      .add(s"public ${message.nameSymbol} () {")
+      .add("}")
+
+      .add("/**")
+      .add(" * Default constructor")
+      .add(" */")
+      .add(s"public ${message.nameSymbol} (")
+        .indent
+        .print(message.fields) {
+            case (field, p) => { p
+              .when(!field.isOptional)(p => p
+                .add(s"${field.javaTypeName} ${field.getName},")
+                )
+            }
+        }
+        .add(s"Object... rest")   // TODO: temp solution!
+        .outdent
+      .add(") {")
+      .indent
+      .add("// Members initialization")
+      .print(message.fields) {
+        case (field, p) => { p
+          .when(!field.isOptional)(p => p
+            .add(s"this.${field.getName} = ${field.getName};")
+          )
+        }
+      }
+      .outdent
+      .add("}")
 
       .indent
       .print(message.getEnumTypes)(printEnumNoClass)
@@ -241,8 +277,151 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
            |}
            """.stripMargin)
 
+
+      .add("@Override")
+      .add("public String toString() {")
+      .indent
+      .add("String res = \"" + message.nameSymbol + "\";")
+      .print(message.fields) {
+        case (field, p) => {
+          p
+            .when(field.isOptional)(p => p
+              .add(s"if (_has_${field.getName})")
+              .indent
+              .call(generateToString(field, field.getName))
+              .outdent)
+            .when(field.isRepeated)(p => p
+              .add(s"for(${field.singleJavaTypeName} q : ${field.getName})")
+              .indent
+              .call(generateToString(field, "q"))
+              .outdent)
+            .when(!field.isRepeated && !field.isOptional)(p => p
+              .call(generateToString(field, field.getName)))
+        }
+      }
+      .add("return res;")
       .outdent
       .add("}")
+
+      .add("")
+      .add("@Override")
+      .add("public boolean equals(Object o) {")
+      .indent
+      .add("if (this == o) return true;")
+      .add("if (!(o instanceof " + message.nameSymbol + ")) return false;")
+      .add("")
+      .add(message.nameSymbol + " that = (" + message.nameSymbol + ") o;")
+      .add("")
+
+      .print(message.fields) {
+        case (field, p) => {
+          p
+            .when(field.isOptional)(p => p
+              .add(s"if (_has_${field.getName} != that._has_${field.getName}) return false;")
+              .indent
+              .call(generateEquals(field, field.getName, "that." + field.getName))
+              .outdent
+              )
+            .when(field.isRepeated)(p => p
+              .add(s"for(int i = 0; i < ${field.getName}.size(); ++i) {")
+              .indent
+              .call(generateEquals(field, s"this.${field.getName}.get(i)", s"that.${field.getName}.get(i)"))
+              .outdent
+              .add("}")
+              )
+            .when(!field.isRepeated && !field.isOptional)(p => p
+              .call(generateEquals(field, field.getName, "that." + field.getName)))
+        }
+      }
+
+      .add("return true;")
+      .outdent
+      .add("}")
+
+      .add("")
+      .add("@Override")
+      .add("public int hashCode() {")
+      .indent
+      .add("int result = 0;")
+
+      .print(message.fields) {
+        case (field, p) => {
+          p
+            .when(field.isOptional)(p => p
+              .add(s"if (_has_${field.getName}) {")
+              .indent
+              .call(generateHashcode(field, field.getName))
+              .outdent
+              .add(s"} else {")
+              .indent
+              .add(s"result += 1;")
+              .outdent
+              .add("}")
+            )
+            .when(field.isRepeated)(p => p
+              .add(s"result = 31 * result + (${field.getName} != null ? ${field.getName}.hashCode() : 0);")
+            )
+            .when(!field.isRepeated && !field.isOptional)(p => p
+              .call(generateHashcode(field, field.getName))
+            )
+        }
+      }
+
+      .add("return result;")
+      .outdent
+      .add("}")
+
+      .outdent
+      .add("}")
+      .add("")
+  }
+
+  def generateHashcode(field: FieldDescriptor, valueName: String)(printer: FunctionalPrinter): FunctionalPrinter = {
+    field.getJavaType match {
+      case FieldDescriptor.JavaType.INT =>
+        printer.add(s"result = 31 * result + ${valueName};")
+      case FieldDescriptor.JavaType.LONG =>
+        printer.add(s"result = 31 * result + (int)(${valueName});")
+      case FieldDescriptor.JavaType.FLOAT =>
+        printer.add(s"result = 31 * result + new Float(${valueName}).hashCode();")
+      case FieldDescriptor.JavaType.DOUBLE =>
+        printer.add(s"result = 31 * result + new Double(${valueName}).hashCode();")
+      case FieldDescriptor.JavaType.BOOLEAN =>
+        printer.add(s"result = 31 * result + (${valueName} ? 1 : 0);")
+      case FieldDescriptor.JavaType.ENUM =>
+        printer.add(s"result = 31 * result + ${valueName};")
+      case _ => {
+        printer.add(s"result = 31 * result + ${valueName}.hashCode();")
+      }
+    }
+  }
+
+  def generateEquals(field: FieldDescriptor, valueName1: String, valueName2: String)(printer: FunctionalPrinter): FunctionalPrinter = {
+    field.getJavaType match {
+      case FieldDescriptor.JavaType.INT =>
+        printer.add(s"if (${valueName1} != ${valueName2}) return false;")
+      case FieldDescriptor.JavaType.LONG =>
+        printer.add(s"if (${valueName1} != ${valueName2}) return false;")
+      case FieldDescriptor.JavaType.BOOLEAN =>
+        printer.add(s"if (${valueName1} != ${valueName2}) return false;")
+      case FieldDescriptor.JavaType.ENUM =>
+        printer.add(s"if (${valueName1} != ${valueName2}) return false;")
+      case _ => {
+        printer.add(s"if (${valueName1} != null && ${valueName2} != null && !${valueName1}.equals(${valueName2})) return false;",
+          s"if (${valueName1} != null && ${valueName2} == null) return false;",
+          s"if (${valueName1} == null && ${valueName2} != null) return false;")
+      }
+    }
+  }
+
+  def generateToString(field: FieldDescriptor, valueName: String)(printer: FunctionalPrinter): FunctionalPrinter = {
+    def space = "\", \""
+    field.getJavaType match {
+      case FieldDescriptor.JavaType.ENUM =>
+        printer.add(s"res += $space + $valueName;")
+      case _ =>
+        printer.add(s"res += $space + $valueName;")
+    }
   }
 
 
