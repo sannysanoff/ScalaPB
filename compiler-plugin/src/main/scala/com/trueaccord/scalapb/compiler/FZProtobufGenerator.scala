@@ -1,10 +1,8 @@
 package com.trueaccord.scalapb.compiler
 
 import com.google.protobuf.Descriptors._
-import com.google.protobuf.CodedOutputStream
 import com.google.protobuf.{ByteString => GoogleByteString}
 import com.google.protobuf.compiler.PluginProtos.{CodeGeneratorRequest, CodeGeneratorResponse}
-import com.trueaccord.scalapb.compiler.FunctionalPrinter.PrinterEndo
 import scala.collection.JavaConversions._
 
 class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps {
@@ -49,6 +47,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   def javaToScalaConversion(field: FieldDescriptor) = {
     val baseValueConversion = field.getJavaType match {
       case FieldDescriptor.JavaType.INT => MethodApplication("intValue")
+
       case FieldDescriptor.JavaType.LONG => MethodApplication("longValue")
       case FieldDescriptor.JavaType.FLOAT => MethodApplication("floatValue")
       case FieldDescriptor.JavaType.DOUBLE => MethodApplication("doubleValue")
@@ -128,57 +127,50 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
 
   def printMessage(topLevel: Boolean)(message: Descriptor,
                                       printer: FunctionalPrinter): FunctionalPrinter = {
+    val requiredFields = message.fields.filter(!_.isOptional).map(f => s"${f.javaTypeName} ${f.getName}") mkString ", "
+
     printer
-      .add(s"/**")
+      .add("")
+      .add("/**")
       .add(s"  * ${message.getName}")
-      .add(s"  */")
+      .add("  */")
       .add(s"public ${if (topLevel) "" else "static "}class ${message.nameSymbol} implements Message, java.io.Serializable {")
       .indent
 
       .print(message.fields) {
-        case (field, p) => {
+        case (field, p) =>
           p.add(s"protected ${field.javaTypeName} ${field.getName}${field.initializer};")
             .when(field.isOptional)(p => p.add(s"protected boolean _has_${field.getName};"))
-        }
       }
 
-      .add("/**")
-      .add(" * Default constructor w/o parameters")
-      .add(" */")
-      .add(s"public ${message.nameSymbol} () {")
-      .add("}")
-
-      .add("/**")
-      .add(" * Default constructor")
-      .add(" */")
-      .add(s"public ${message.nameSymbol} (")
-        .indent
-        .print(message.fields) {
+      .add("")
+      .when(requiredFields.nonEmpty)(
+        _.add("/**")
+          .add(" * Default constructor w/o parameters")
+          .add(" */")
+          .add(s"public ${message.nameSymbol} () {")
+          .add("}")
+          .add("")
+          .add("/**")
+          .add(" * Default constructor with required params")
+          .add(" */")
+          .add(s"public ${message.nameSymbol} ($requiredFields) {" )
+          .indent
+          .add("// Members initialization")
+          .print(message.fields) {
             case (field, p) => { p
               .when(!field.isOptional)(p => p
-                .add(s"${field.javaTypeName} ${field.getName},")
-                )
+                .add(s"this.${field.getName} = ${field.getName};")
+              )
             }
-        }
-        .add(s"Object... rest")   // TODO: temp solution!
-        .outdent
-      .add(") {")
-      .indent
-      .add("// Members initialization")
-      .print(message.fields) {
-        case (field, p) => { p
-          .when(!field.isOptional)(p => p
-            .add(s"this.${field.getName} = ${field.getName};")
-          )
-        }
-      }
-      .outdent
-      .add("}")
+          }
+          .outdent
+          .add("}")
+          .add("")
+      )
 
-      .indent
       .print(message.getEnumTypes)(printEnumNoClass)
       .print(message.nestedTypes)(printMessage(topLevel = false))
-      .outdent
 
       .print(message.fields) {
         case (field, p) => {
@@ -198,6 +190,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
             )
         }
       }
+      .add("")
       .add("public final void serialize(CodedOutputStream out) throws IOException {")
       .indent
       .print(message.fields) {
@@ -220,7 +213,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .outdent
       .add("}")
 
-
+      .add("")
       .add("public final void deserialize(CodedInputStream in) throws IOException {")
       .indent
       .add("while (true) {")
