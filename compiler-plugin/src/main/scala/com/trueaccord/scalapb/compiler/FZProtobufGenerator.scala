@@ -138,9 +138,11 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .indent
 
       .print(message.fields) {
-        case (field, p) =>
+        case (field, p) => {
+
           p.add(s"protected ${field.javaTypeName} ${field.getName}${field.initializer};")
             .when(field.isOptional)(p => p.add(s"protected boolean _has_${field.getName};"))
+        }
       }
 
       .add("")

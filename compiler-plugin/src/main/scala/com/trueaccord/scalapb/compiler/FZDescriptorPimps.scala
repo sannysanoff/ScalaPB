@@ -116,9 +116,7 @@ trait FZDescriptorPimps {
 
     def scalaName: String = snakeCaseToCamelCase(fd.getName)
 
-    def nextLowercase(s: String): String = s.substring(0, 1) + s.substring(1).toLowerCase
-
-    def upperJavaName: String = nextLowercase(snakeCaseToCamelCase(fd.getName, true))
+    def upperJavaName: String = snakeCaseToCamelCase(fd.getName, true)
 
     def fieldNumberConstantName: String = fd.getName.toUpperCase() + "_FIELD_NUMBER"
 
