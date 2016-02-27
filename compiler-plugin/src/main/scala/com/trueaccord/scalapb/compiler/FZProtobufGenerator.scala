@@ -11,7 +11,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
     * Implicit class to add some functions
     */
   class BetterFunctionalPrinter (p: FunctionalPrinter) {
-    def addSimpleMethod(name: String, mtype: String, params: String, body: String) : FunctionalPrinter = {
+    def addMethod(name: String, mtype: String, params: String, body: String) : FunctionalPrinter = {
       p.add("public " + mtype + " " + name + "(" + params + ")" + " {")
         .indent
         .add(body)
@@ -22,6 +22,9 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   }
 
   implicit def stringToString(s: FunctionalPrinter) = new BetterFunctionalPrinter(s)
+
+  def initRepeatedFldIfNull(field: FieldDescriptor) : String =
+    if (field.isRepeated) {s"if (this.${field.getName} == null) this.${field.getName} = new ArrayList<${field.singleJavaTypeName}>();"} else { "" }
 
   def printEnum(e: EnumDescriptor, printer: FunctionalPrinter): FunctionalPrinter = {
     val name = e.nameSymbol
@@ -180,7 +183,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
           .add("// Members initialization")
           .print(message.fields) {
             case (field, p) => { p
-              .when(!field.isOptional)(p => p
+              .when(!field.isOptional && !field.isRepeated)(p => p
                 .add(s"this.${field.getName} = ${field.getName};")
               )
             }
@@ -195,22 +198,24 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
 
       .print(message.fields) {
         case (field, p) => {
-          p.addSimpleMethod(s"get${field.upperJavaName}${if (field.isRepeated) "ArrayList" else ""}", s"${field.javaTypeName}", "", s"return ${field.getName};")
+          p.addMethod(s"get${field.upperJavaName}${if (field.isRepeated) "ArrayList" else ""}", s"${field.javaTypeName}", "",
+              s"${initRepeatedFldIfNull(field)} return ${field.getName};")
             .when(field.isRepeated)(p => p
-              .addSimpleMethod(s"get${field.upperJavaName}", s"${field.singleJavaTypeName}", s"int i", s"return ${field.getName}.get(i);")
+              .addMethod(s"get${field.upperJavaName}", s"${field.singleJavaTypeName}", s"int i", s"return ${field.getName}.get(i);")
             )
             .when(field.isRepeated || !field.isOptional)(p =>
-               p.addSimpleMethod(s"set${field.upperJavaName}${if (field.isRepeated) "ArrayList" else ""}",
+               p.addMethod(s"set${field.upperJavaName}${if (field.isRepeated) "ArrayList" else ""}",
                  message.nameSymbol,
                   s"${field.javaTypeName} val",
                   s"this.${field.getName} = val; return this;"))
               .when(field.isOptional)(p =>
-                p.addSimpleMethod(s"has${field.upperJavaName}", s"boolean", s"", s"return _has_${field.getName};")
-                  .addSimpleMethod(s"clear${field.upperJavaName}", "void", s"", s"this.${field.getName} = ${defaultValue(field)}; _has_${field.getName} = false;")
-                  .addSimpleMethod(s"set${field.upperJavaName}", message.nameSymbol, s"${field.javaTypeName} val", s"this.${field.getName} = val; _has_${field.getName} = true; return this;"))
+                p.addMethod(s"has${field.upperJavaName}", s"boolean", s"", s"return _has_${field.getName};")
+                  .addMethod(s"clear${field.upperJavaName}", "void", s"", s"this.${field.getName} = ${defaultValue(field)}; _has_${field.getName} = false;")
+                  .addMethod(s"set${field.upperJavaName}", message.nameSymbol, s"${field.javaTypeName} val", s"this.${field.getName} = val; _has_${field.getName} = true; return this;"))
               .when(field.isRepeated)(p =>
-                p.addSimpleMethod(s"add${field.upperJavaName}", message.nameSymbol, s"${field.singleJavaTypeName} item", s"this.${field.getName}.add(item); return this;")
-                  .addSimpleMethod(s"get${field.upperJavaName}Count", "int", "", s"return this.${field.getName}.size();")
+                p.addMethod(s"add${field.upperJavaName}", message.nameSymbol, s"${field.singleJavaTypeName} item",
+                      s"${initRepeatedFldIfNull(field)} this.${field.getName}.add(item); return this;")
+                  .addMethod(s"get${field.upperJavaName}Count", "int", "", s"return this.${field.getName} == null ? 0 : this.${field.getName}.size();")
               )
         }
       }
@@ -226,10 +231,15 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
               .call(generateWriteOne(field, field.getName))
               .outdent)
             .when(field.isRepeated)(p => p
-              .add(s"for(${field.singleJavaTypeName} q : ${field.getName})")
-              .indent
-              .call(generateWriteOne(field, "q"))
-              .outdent)
+              .add(s"if (${field.getName} != null) {")
+                .indent
+                .add(s"for(${field.singleJavaTypeName} q : ${field.getName}) {")
+                  .indent
+                    .call(generateWriteOne(field, "q"))
+                  .outdent
+                .add("}")
+                .outdent
+              .add("}"))
             .when(!field.isRepeated && !field.isOptional)(p => p
               .call(generateWriteOne(field, field.getName)))
         }
@@ -262,12 +272,14 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
             })
               .add("break;"))
           .when(field.isRepeated && field.getJavaType == FieldDescriptor.JavaType.MESSAGE)(p => p
+            .add(initRepeatedFldIfNull(field))
             .add(s"{${field.singleJavaTypeName} message = new ${field.singleJavaTypeName}();")
             .add("in.readMessage(message);")
             .add(s"add${field.upperJavaName}(message);}")
             .add("break;")
           )
           .when(field.isRepeated && field.getJavaType != FieldDescriptor.JavaType.MESSAGE)(p => p
+            .add(initRepeatedFldIfNull(field))
             .add(s"add${field.upperJavaName}(in.read${Types.capitalizedType(field.getType)}());")
             .add("break;")
           )

@@ -187,7 +187,7 @@ trait FZDescriptorPimps {
     }
 
   def initializer: String = {
-    if (fd.isRepeated) s" = new ArrayList<$singleJavaTypeName>()"
+    if (fd.isRepeated) s" = null"
     else ""
   }
 
