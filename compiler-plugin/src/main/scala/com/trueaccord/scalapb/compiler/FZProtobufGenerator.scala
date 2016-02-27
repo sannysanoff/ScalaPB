@@ -7,6 +7,22 @@ import scala.collection.JavaConversions._
 
 class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps {
 
+  /**
+    * Implicit class to add some functions
+    */
+  class BetterFunctionalPrinter (p: FunctionalPrinter) {
+    def addSimpleMethod(name: String, mtype: String, params: String, body: String) : FunctionalPrinter = {
+      p.add("public " + mtype + " " + name + "(" + params + ")" + " {")
+        .indent
+        .add(body)
+        .outdent
+        .add("}")
+        .newline
+    }
+  }
+
+  implicit def stringToString(s: FunctionalPrinter) = new BetterFunctionalPrinter(s)
+
   def printEnum(e: EnumDescriptor, printer: FunctionalPrinter): FunctionalPrinter = {
     val name = e.nameSymbol
     printer
@@ -127,10 +143,12 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
 
   def printMessage(topLevel: Boolean)(message: Descriptor,
                                       printer: FunctionalPrinter): FunctionalPrinter = {
-    val requiredFields = message.fields.filter(!_.isOptional).map(f => s"${f.javaTypeName} ${f.getName}") mkString ", "
+    val requiredFields = message.fields
+      .filter(f => !f.isOptional && !f.isRepeated)
+      .map(f => s"${f.javaTypeName} ${f.getName}") mkString ", "
 
     printer
-      .add("")
+      .newline
       .add("/**")
       .add(s"  * ${message.getName}")
       .add("  */")
@@ -145,16 +163,17 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
         }
       }
 
-      .add("")
+      .newline
       .when(requiredFields.nonEmpty)(
-        _.add("/**")
+        _
+          .add("/**")
           .add(" * Default constructor w/o parameters")
           .add(" */")
-          .add(s"public ${message.nameSymbol} () {")
+          .add(s"${message.nameSymbol} () {")
           .add("}")
-          .add("")
+          .newline
           .add("/**")
-          .add(" * Default constructor with required params")
+          .add(" * Constructor with required params")
           .add(" */")
           .add(s"public ${message.nameSymbol} ($requiredFields) {" )
           .indent
@@ -168,7 +187,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
           }
           .outdent
           .add("}")
-          .add("")
+          .newline
       )
 
       .print(message.getEnumTypes)(printEnumNoClass)
@@ -176,23 +195,26 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
 
       .print(message.fields) {
         case (field, p) => {
-          p.add(s"public ${field.javaTypeName} get${field.upperJavaName}${if (field.isRepeated) "ArrayList" else ""}() {return ${field.getName};} ")
+          p.addSimpleMethod(s"get${field.upperJavaName}${if (field.isRepeated) "ArrayList" else ""}", s"${field.javaTypeName}", "", s"return ${field.getName};")
             .when(field.isRepeated)(p => p
-              .add(s"public ${field.singleJavaTypeName} get${field.upperJavaName}(int i) {return ${field.getName}.get(i);} ")
+              .addSimpleMethod(s"get${field.upperJavaName}", s"${field.singleJavaTypeName}", s"int i", s"return ${field.getName}.get(i);")
             )
             .when(field.isRepeated || !field.isOptional)(p =>
-              p.add(s"public void set${field.upperJavaName}${if (field.isRepeated) "ArrayList" else ""}(${field.javaTypeName} val) {this.${field.getName} = val;} "))
-            .when(field.isOptional)(p =>
-              p.add(s"public boolean has${field.upperJavaName}() {return _has_${field.getName};} ")
-                .add(s"public void clear${field.upperJavaName}() {this.${field.getName} = ${defaultValue(field)}; _has_${field.getName} = false;} ")
-                .add(s"public void set${field.upperJavaName}(${field.javaTypeName} val) {this.${field.getName} = val; _has_${field.getName} = true;} "))
-            .when(field.isRepeated)(p =>
-              p.add(s"public void add${field.upperJavaName}(${field.singleJavaTypeName} item) {this.${field.getName}.add(item);} ")
-                .add(s"public int get${field.upperJavaName}Count() {return this.${field.getName}.size();} ")
-            )
+               p.addSimpleMethod(s"set${field.upperJavaName}${if (field.isRepeated) "ArrayList" else ""}",
+                 message.nameSymbol,
+                  s"${field.javaTypeName} val",
+                  s"this.${field.getName} = val; return this;"))
+              .when(field.isOptional)(p =>
+                p.addSimpleMethod(s"has${field.upperJavaName}", s"boolean", s"", s"return _has_${field.getName};")
+                  .addSimpleMethod(s"clear${field.upperJavaName}", "void", s"", s"this.${field.getName} = ${defaultValue(field)}; _has_${field.getName} = false;")
+                  .addSimpleMethod(s"set${field.upperJavaName}", message.nameSymbol, s"${field.javaTypeName} val", s"this.${field.getName} = val; _has_${field.getName} = true; return this;"))
+              .when(field.isRepeated)(p =>
+                p.addSimpleMethod(s"add${field.upperJavaName}", message.nameSymbol, s"${field.singleJavaTypeName} item", s"this.${field.getName}.add(item); return this;")
+                  .addSimpleMethod(s"get${field.upperJavaName}Count", "int", "", s"return this.${field.getName}.size();")
+              )
         }
       }
-      .add("")
+      .newline
       .add("public final void serialize(CodedOutputStream out) throws IOException {")
       .indent
       .print(message.fields) {
@@ -215,7 +237,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .outdent
       .add("}")
 
-      .add("")
+      .newline
       .add("public final void deserialize(CodedInputStream in) throws IOException {")
       .indent
       .add("while (true) {")
@@ -299,15 +321,15 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .outdent
       .add("}")
 
-      .add("")
+      .newline
       .add("@Override")
       .add("public boolean equals(Object o) {")
       .indent
       .add("if (this == o) return true;")
       .add("if (!(o instanceof " + message.nameSymbol + ")) return false;")
-      .add("")
+      .newline
       .add(message.nameSymbol + " that = (" + message.nameSymbol + ") o;")
-      .add("")
+      .newline
 
       .print(message.fields) {
         case (field, p) => {
@@ -334,7 +356,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .outdent
       .add("}")
 
-      .add("")
+      .newline
       .add("@Override")
       .add("public int hashCode() {")
       .indent
@@ -369,7 +391,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
 
       .outdent
       .add("}")
-      .add("")
+      .newline
   }
 
   def generateHashcode(field: FieldDescriptor, valueName: String)(printer: FunctionalPrinter): FunctionalPrinter = {
@@ -438,7 +460,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .print(javaImportList) {
         case (i, printer) => printer.add(s"import $i;")
       }
-      .add("")
+      .newline
   }
 
   def generateScalaFilesForFileDescriptor(file: FileDescriptor): Seq[CodeGeneratorResponse.File] = {
