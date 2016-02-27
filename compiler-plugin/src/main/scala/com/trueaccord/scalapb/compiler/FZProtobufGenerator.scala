@@ -162,8 +162,10 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .add("/**")
       .add(s"  * ${message.getName}")
       .add("  */")
-      .add(s"public ${if (topLevel) "" else "static "}class ${message.nameSymbol} implements Message, java.io.Serializable {")
+      .add(s"public ${if (topLevel) "" else "static "}class ${message.nameSymbol} implements Message, java.io.Serializable, java.lang.Cloneable {")
       .indent
+
+      .add(s"public static MessageFactory<${message.nameSymbol}> messageFactory;")
 
       .print(message.fields) {
         case (field, p) => {
@@ -309,7 +311,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .addM(
         s"""
            |public static ${message.nameSymbol} fromBytes(byte[] in) throws EncodingException {
-           |    ${message.nameSymbol} message = new ${message.nameSymbol}();
+           |    ${message.nameSymbol} message = messageFactory != null ? messageFactory.newInstance() : new ${message.nameSymbol}();
            |    ProtoUtil.messageFromBytes(in, message);
            |    return message;
            |}
@@ -317,6 +319,14 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
            |public byte[] toBytes() throws EncodingException {
            |    return ProtoUtil.messageToBytes(this);
            |}
+           """.stripMargin)
+
+      .addM(
+        s"""
+           |public ${message.nameSymbol} clone()  {
+           |    try { return (${message.nameSymbol})super.clone(); } catch (Exception ex) { throw new RuntimeException(ex); }
+           |}
+           |
            """.stripMargin)
 
 
@@ -327,19 +337,9 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .print(message.fields) {
         case (field, p) => {
           p
-            .when(field.isOptional)(p => p
-              .add(s"if (_has_${field.getName})")
-              .indent
-              .call(generateToString(field, field.getName, field.getName))
-              .outdent)
-            .when(field.isRepeated)(p => p
-              .add(s"for(${field.singleJavaTypeName} q : get${field.upperJavaName}Iterable()) {")
-              .indent
-              .call(generateToString(field, "q", field.getName + s"[]"))
-              .outdent
-              .add("}"))
-            .when(!field.isRepeated && !field.isOptional)(p => p
-              .call(generateToString(field, field.getName, field.getName)))
+            .when(field.isOptional)(_.call(generateToString(s"if (_has_${field.getName}) ", field, field.getName, field.getName, "")))
+            .when(field.isRepeated)(_.call(generateToString(s"for(${field.singleJavaTypeName} q : ${field.getName}) { ", field, "q", field.getName + "[]", " }")))
+            .when(!field.isRepeated && !field.isOptional)(_.call(generateToString("", field, field.getName, field.getName, "")))
         }
       }
       .add("return res + \"}\";")
@@ -385,6 +385,32 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .add("return true;")
       .outdent
       .add("}")
+
+      .newline
+      .add(s"public ${message.nameSymbol} mergeFrom(${message.nameSymbol} that) {")
+      .indent
+      .newline
+
+      .print(message.fields) {
+        case (field, p) => {
+          p
+            .when(field.isOptional)(p => p
+              .add(s"if (that._has_${field.getName}) set${field.upperJavaName}(that.${field.getName});")
+              )
+            .when(field.isRepeated)(p => p
+              .add(s"if (that.${field.getName} != null) ${field.getName} = that.${field.getName};")
+              )
+            .when(!field.isRepeated && !field.isOptional)(p => p
+              .add(s"${field.getName} = that.${field.getName};")
+            )
+        }
+      }
+
+      .add("return this;")
+      .outdent
+      .add("}")
+
+
 
       .newline
       .add("@Override")
@@ -462,14 +488,14 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
     }
   }
 
-  def generateToString(field: FieldDescriptor, valueName: String, strValueName: String)(printer: FunctionalPrinter): FunctionalPrinter = {
+  def generateToString(prefix: String, field: FieldDescriptor, valueName: String, strValueName: String, suffix: String)(printer: FunctionalPrinter): FunctionalPrinter = {
     def q = "\""
     def space = s"$q, ${strValueName}=$q"
     field.getJavaType match {
       case FieldDescriptor.JavaType.ENUM =>
-        printer.add(s"res += $space + $valueName;")
+        printer.add(s"${prefix}res += $space + $valueName;${suffix}")
       case _ =>
-        printer.add(s"res += $space + $valueName;")
+        printer.add(s"${prefix}res += $space + $valueName;${suffix}")
     }
   }
 
