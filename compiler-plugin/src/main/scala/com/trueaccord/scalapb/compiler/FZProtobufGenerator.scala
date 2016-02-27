@@ -196,20 +196,26 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .print(message.getEnumTypes)(printEnumNoClass)
       .print(message.nestedTypes)(printMessage(topLevel = false))
 
+      // Generate getters and setters
       .print(message.fields) {
-        case (field, p) => {
-          p.addMethod(s"get${field.upperJavaName}${if (field.isRepeated) "ArrayList" else ""}", s"${field.javaTypeName}", "",
-              s"${initRepeatedFldIfNull(field)} return ${field.getName};")
+        case (field, p) => { p
             .when(field.isRepeated)(p => p
               .addMethod(s"get${field.upperJavaName}", s"${field.singleJavaTypeName}", s"int i", s"return ${field.getName}.get(i);")
+              .addMethod(s"get${field.upperJavaName}Iterable", s"Iterable<${field.singleJavaTypeName}>", "",
+                  s"return (${field.getName} != null) ? ${field.getName} : Collections.<${field.singleJavaTypeName}>emptyList();")
+              .addMethod(s"get${field.upperJavaName}ArrayList", s"ArrayList<${field.singleJavaTypeName}>", "",
+                  s"${initRepeatedFldIfNull(field)} return ${field.getName};")
+            )
+            .when(!field.isRepeated)(p => p
+              .addMethod(s"get${field.upperJavaName}", s"${field.javaTypeName}", "", s"return ${field.getName};")
             )
             .when(field.isRepeated || !field.isOptional)(p =>
                p.addMethod(s"set${field.upperJavaName}${if (field.isRepeated) "ArrayList" else ""}",
                  message.nameSymbol,
                   s"${field.javaTypeName} val",
                   s"this.${field.getName} = val; return this;"))
-              .when(field.isOptional)(p =>
-                p.addMethod(s"has${field.upperJavaName}", s"boolean", s"", s"return _has_${field.getName};")
+              .when(field.isOptional)(p => p
+                .addMethod(s"has${field.upperJavaName}", s"boolean", s"", s"return _has_${field.getName};")
                   .addMethod(s"clear${field.upperJavaName}", "void", s"", s"this.${field.getName} = ${defaultValue(field)}; _has_${field.getName} = false;")
                   .addMethod(s"set${field.upperJavaName}", message.nameSymbol, s"${field.javaTypeName} val", s"this.${field.getName} = val; _has_${field.getName} = true; return this;"))
               .when(field.isRepeated)(p =>
@@ -320,9 +326,9 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
               .call(generateToString(field, field.getName, field.getName))
               .outdent)
             .when(field.isRepeated)(p => p
-              .add(s"for(${field.singleJavaTypeName} q : ${field.getName}) {")
+              .add(s"for(${field.singleJavaTypeName} q : get${field.upperJavaName}Iterable()) {")
               .indent
-              .call(generateToString(field, "q", field.getName + "[]"))
+              .call(generateToString(field, "q", field.getName + s"[]"))
               .outdent
               .add("}"))
             .when(!field.isRepeated && !field.isOptional)(p => p
@@ -349,10 +355,15 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
             .when(field.isOptional)(p => p
               .add(s"if (_has_${field.getName} != that._has_${field.getName}) return false;")
               .indent
-              .call(generateEquals(field, field.getName, "that." + field.getName))
+              .add(s"if (_has_${field.getName}) {")
+                .indent
+                .call(generateEquals(field, field.getName, "that." + field.getName))
+                .outdent
+              .add("}")
               .outdent
               )
             .when(field.isRepeated)(p => p
+              .add(s"if ((this.${field.getName} == null || this.${field.getName}.size() == 0) != (that.${field.getName} == null || that.${field.getName}.size() == 0)) return false;")
               .add(s"for(int i = 0; i < ${field.getName}.size(); ++i) {")
               .indent
               .call(generateEquals(field, s"this.${field.getName}.get(i)", s"that.${field.getName}.get(i)"))
@@ -437,9 +448,9 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       case FieldDescriptor.JavaType.ENUM =>
         printer.add(s"if (${valueName1} != ${valueName2}) return false;")
       case _ => {
-        printer.add(s"if (${valueName1} != null && ${valueName2} != null && !${valueName1}.equals(${valueName2})) return false;",
-          s"if (${valueName1} != null && ${valueName2} == null) return false;",
-          s"if (${valueName1} == null && ${valueName2} != null) return false;")
+        printer.add(
+          s"if ((${valueName1} == null) != (${valueName2} == null)) return false;",
+          s"if (${valueName1} != null && !${valueName1}.equals(${valueName2})) return false;")
       }
     }
   }
@@ -456,7 +467,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   }
 
 
-  val javaImportList = Seq("java.util.ArrayList", "java.io.IOException", "com.ponderingpanda.protobuf.*")
+  val javaImportList = Seq("java.util.ArrayList", "java.util.Collections", "java.io.IOException", "com.ponderingpanda.protobuf.*")
 
   def javaFileHeader(file: FileDescriptor): FunctionalPrinter = {
     new FunctionalPrinter().addM(
