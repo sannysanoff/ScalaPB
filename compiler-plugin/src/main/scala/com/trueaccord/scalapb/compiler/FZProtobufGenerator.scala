@@ -370,12 +370,13 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
               .outdent
               )
             .when(field.isRepeated)(p => p
-              .add(s"if ((this.${field.getName} == null || this.${field.getName}.size() == 0) != (that.${field.getName} == null || that.${field.getName}.size() == 0)) return false;")
-              .add(s"for(int i = 0; i < ${field.getName}.size(); ++i) {")
-              .indent
-              .call(generateEquals(field, s"this.${field.getName}.get(i)", s"that.${field.getName}.get(i)"))
-              .outdent
-              .add("}")
+              .add(s"if (!ProtoUtil.arrayListsEqual(this.${field.getName}, that.${field.getName})) return false;")
+//              .add(s"if ((this.${field.getName} == null || this.${field.getName}.size() == 0) != (that.${field.getName} == null || that.${field.getName}.size() == 0)) return false;")
+//              .add(s"for(int i = 0; i < ${field.getName}.size(); ++i) {")
+//              .indent
+//              .call(generateEquals(field, s"this.${field.getName}.get(i)", s"that.${field.getName}.get(i)"))
+//              .outdent
+//              .add("}")
               )
             .when(!field.isRepeated && !field.isOptional)(p => p
               .call(generateEquals(field, field.getName, "that." + field.getName)))
