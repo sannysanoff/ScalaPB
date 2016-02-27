@@ -169,7 +169,7 @@ trait FZDescriptorPimps {
         case FieldDescriptor.JavaType.BYTE_STRING => "byte[]"
         case FieldDescriptor.JavaType.STRING => "String"
         case FieldDescriptor.JavaType.MESSAGE => fd.getMessageType.scalaTypeName
-        case FieldDescriptor.JavaType.ENUM => "int" // fd.getEnumType.scalaTypeName
+        case FieldDescriptor.JavaType.ENUM => fd.getEnumType.scalaTypeName
       }
     }
     else {
@@ -182,7 +182,7 @@ trait FZDescriptorPimps {
         case FieldDescriptor.JavaType.BYTE_STRING => "byte[]"
         case FieldDescriptor.JavaType.STRING => "String"
         case FieldDescriptor.JavaType.MESSAGE => fd.getMessageType.scalaTypeName
-        case FieldDescriptor.JavaType.ENUM => "Integer" // fd.getEnumType.scalaTypeName
+        case FieldDescriptor.JavaType.ENUM => fd.getEnumType.scalaTypeName
       }
     }
 

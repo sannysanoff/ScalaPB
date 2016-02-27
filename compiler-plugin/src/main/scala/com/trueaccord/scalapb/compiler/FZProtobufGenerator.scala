@@ -19,6 +19,15 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
         .add("}")
         .newline
     }
+
+    def addStaticMethod(name: String, mtype: String, params: String, body: String) : FunctionalPrinter = {
+      p.add("public static " + mtype + " " + name + "(" + params + ")" + " {")
+        .indent
+        .add(body)
+        .outdent
+        .add("}")
+        .newline
+    }
   }
 
   implicit def stringToString(s: FunctionalPrinter) = new BetterFunctionalPrinter(s)
@@ -26,26 +35,24 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   def initRepeatedFldIfNull(field: FieldDescriptor) : String =
     if (field.isRepeated) {s"if (this.${field.getName} == null) this.${field.getName} = new ArrayList<${field.singleJavaTypeName}>();"} else { "" }
 
-  def printEnum(e: EnumDescriptor, printer: FunctionalPrinter): FunctionalPrinter = {
+  def printEnum(e: EnumDescriptor, p: FunctionalPrinter): FunctionalPrinter = {
     val name = e.nameSymbol
-    printer
-      .add(s"public class $name implements java.io.Serializable {")
+    p
+      .add("public enum " + e.getName + " {")
       .indent
       .print(e.getValues) {
         case (v, p) => p.add(
-          s"public static final int ${v.getName} = ${v.getNumber};")
+          s"${v.getName}(${v.getNumber}),")
       }
+      .add(";")
+      .newline
+      .add("public final int val;")
+      .newline
+      .add(s"${e.getName} (int val) { this.val = val; }")
+      .newline
+      .addStaticMethod("fromValue", s"${e.getName}", "int i", s"for (${e.getName} e : values()) { if (e.val == i) return e; } return null;")
       .outdent
       .add("}")
-  }
-
-  def printEnumNoClass(e: EnumDescriptor, printer: FunctionalPrinter): FunctionalPrinter = {
-    val name = e.nameSymbol
-    printer
-      .print(e.getValues) {
-        case (v, p) => p.add(
-          s"public static final int ${v.getName} = ${v.getNumber};")
-      }
   }
 
 
@@ -119,7 +126,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   def generateWriteOne(field: FieldDescriptor, valueName: String)(printer: FunctionalPrinter): FunctionalPrinter = {
     field.getJavaType match {
       case FieldDescriptor.JavaType.ENUM =>
-        printer.add(s"out.writeInt32(${field.getNumber}, $valueName);")
+        printer.add(s"out.writeInt32(${field.getNumber}, $valueName.val);")
       case _ =>
         printer.add(s"out.write${Types.capitalizedType(field.getType)}(${field.getNumber}, $valueName);")
     }
@@ -135,7 +142,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   }
 
   def defaultValue(field: FieldDescriptor): String = field.getJavaType match {
-    case FieldDescriptor.JavaType.ENUM => "0"
+    case FieldDescriptor.JavaType.ENUM => "null"
     case FieldDescriptor.JavaType.INT => "0"
     case FieldDescriptor.JavaType.LONG => "0"
     case FieldDescriptor.JavaType.FLOAT => "0"
@@ -193,7 +200,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
           .newline
       )
 
-      .print(message.getEnumTypes)(printEnumNoClass)
+      .print(message.getEnumTypes)(printEnum)
       .print(message.nestedTypes)(printMessage(topLevel = false))
 
       // Generate getters and setters
@@ -269,7 +276,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
           .when(!field.isRepeated)(p =>
             (field.getJavaType match {
               case FieldDescriptor.JavaType.ENUM =>
-                p.add(s"set${field.upperJavaName}(in.readInt32());")
+                p.add(s"set${field.upperJavaName}(${field.singleJavaTypeName}.fromValue(in.readInt32()));")
               case FieldDescriptor.JavaType.MESSAGE =>
                 p.add(s"set${field.upperJavaName}(new ${field.singleJavaTypeName}());")
                   .add(s"in.readMessage(${field.getName});")
@@ -420,19 +427,19 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   def generateHashcode(field: FieldDescriptor, valueName: String)(printer: FunctionalPrinter): FunctionalPrinter = {
     field.getJavaType match {
       case FieldDescriptor.JavaType.INT =>
-        printer.add(s"result = 31 * result + ${valueName};")
+        printer.add(s"result = 31 * result + this.${valueName};")
       case FieldDescriptor.JavaType.LONG =>
-        printer.add(s"result = 31 * result + (int)(${valueName});")
+        printer.add(s"result = 31 * result + (int)(this.${valueName});")
       case FieldDescriptor.JavaType.FLOAT =>
-        printer.add(s"result = 31 * result + new Float(${valueName}).hashCode();")
+        printer.add(s"result = 31 * result + new Float(this.${valueName}).hashCode();")
       case FieldDescriptor.JavaType.DOUBLE =>
-        printer.add(s"result = 31 * result + new Double(${valueName}).hashCode();")
+        printer.add(s"result = 31 * result + new Double(this.${valueName}).hashCode();")
       case FieldDescriptor.JavaType.BOOLEAN =>
-        printer.add(s"result = 31 * result + (${valueName} ? 1 : 0);")
+        printer.add(s"result = 31 * result + (this.${valueName} ? 1 : 0);")
       case FieldDescriptor.JavaType.ENUM =>
-        printer.add(s"result = 31 * result + ${valueName};")
+        printer.add(s"result = 31 * result + this.${valueName}.val;")
       case _ => {
-        printer.add(s"result = 31 * result + ${valueName}.hashCode();")
+        printer.add(s"result = 31 * result + this.${valueName}.hashCode();")
       }
     }
   }
