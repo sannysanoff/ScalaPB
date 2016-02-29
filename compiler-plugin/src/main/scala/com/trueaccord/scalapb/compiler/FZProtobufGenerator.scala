@@ -338,7 +338,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
         case (field, p) => {
           p
             .when(field.isOptional)(_.call(generateToString(s"if (_has_${field.getName}) ", field, field.getName, field.getName, "")))
-            .when(field.isRepeated)(_.call(generateToString(s"for(${field.singleJavaTypeName} q : ${field.getName}) { ", field, "q", field.getName + "[]", " }")))
+            .when(field.isRepeated)(_.call(generateToString(s"if (${field.getName} != null) for(${field.singleJavaTypeName} q : ${field.getName}) { ", field, "q", field.getName + "[]", " }")))
             .when(!field.isRepeated && !field.isOptional)(_.call(generateToString("", field, field.getName, field.getName, "")))
         }
       }
