@@ -181,7 +181,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
           .add("/**")
           .add(" * Default constructor w/o parameters")
           .add(" */")
-          .add(s"${message.nameSymbol} () {")
+          .add(s"protected ${message.nameSymbol} () {")
           .add("}")
           .newline
           .add("/**")
