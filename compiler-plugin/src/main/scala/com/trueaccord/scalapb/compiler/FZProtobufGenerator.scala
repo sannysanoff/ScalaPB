@@ -162,7 +162,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .add("/**")
       .add(s"  * ${message.getName}")
       .add("  */")
-      .add(s"public ${if (topLevel) "" else "static "}class ${message.nameSymbol} implements Message, java.io.Serializable, java.lang.Cloneable {")
+      .add(s"public ${if (topLevel) "" else "static "}class ${message.nameSymbol} implements Message, java.io.Serializable {")
       .indent
 
       .add(s"public static MessageFactory<${message.nameSymbol}> messageFactory;")
@@ -319,16 +319,13 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
            |public byte[] toBytes() throws EncodingException {
            |    return ProtoUtil.messageToBytes(this);
            |}
-           """.stripMargin)
-
-      .addM(
-        s"""
-           |public ${message.nameSymbol} clone()  {
-           |    try { return (${message.nameSymbol})super.clone(); } catch (Exception ex) { throw new RuntimeException(ex); }
-           |}
            |
+           |public ${message.nameSymbol} cloneIt() {
+           |    ${message.nameSymbol} that = new ${message.nameSymbol}();
+           |    that.mergeFrom(this);
+           |    return that;
+           |}
            """.stripMargin)
-
 
       .add("@Override")
       .add("public String toString() {")
@@ -410,7 +407,6 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .add("return this;")
       .outdent
       .add("}")
-
 
 
       .newline
