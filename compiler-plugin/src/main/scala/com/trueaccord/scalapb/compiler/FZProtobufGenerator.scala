@@ -327,10 +327,9 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
            |}
            """.stripMargin)
 
-      .add("@Override")
-      .add("public String toString() {")
+      .add("public String toStringImpl(final int indent) {")
       .indent
-      .add("String res = \"{ " + message.nameSymbol + "\";")
+      .add("String res = ProtoUtil.repeatStr(indent, \"  \") + \"{ " + message.nameSymbol + "\\n\";")
       .print(message.fields) {
         case (field, p) => {
           p
@@ -339,7 +338,15 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
             .when(!field.isRepeated && !field.isOptional)(_.call(generateToString("", field, field.getName, field.getName, "")))
         }
       }
-      .add("return res + \"}\";")
+      .add("return res + ProtoUtil.repeatStr(indent, \"  \") + \"}\";")
+      .outdent
+      .add("}")
+      .newline
+
+      .add("@Override")
+      .add("public String toString() {")
+      .indent
+      .add("return toStringImpl(0);")
       .outdent
       .add("}")
 
@@ -487,12 +494,12 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
 
   def generateToString(prefix: String, field: FieldDescriptor, valueName: String, strValueName: String, suffix: String)(printer: FunctionalPrinter): FunctionalPrinter = {
     def q = "\""
-    def space = s"$q, ${strValueName}=$q"
+    def space = s"$q${strValueName}=$q"
     field.getJavaType match {
-      case FieldDescriptor.JavaType.ENUM =>
-        printer.add(s"${prefix}res += $space + $valueName;${suffix}")
-      case _ =>
-        printer.add(s"${prefix}res += $space + $valueName;${suffix}")
+      case FieldDescriptor.JavaType.MESSAGE => {
+        printer.add(s"${prefix}res += $valueName.toStringImpl(indent+2) + $q\\n$q;${suffix}")
+      } case _ =>
+        printer.add(s"${prefix}res += ProtoUtil.repeatStr(indent+1, $q  $q) + $space + $valueName + $q\\n$q;${suffix}")
     }
   }
 
