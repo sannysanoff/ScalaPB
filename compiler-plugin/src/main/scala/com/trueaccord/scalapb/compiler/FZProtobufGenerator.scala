@@ -151,6 +151,16 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
     case _ => "null"
   }
 
+  def defaultValueToString(field: FieldDescriptor) : String = {
+    field.getJavaType match {
+      case FieldDescriptor.JavaType.ENUM =>
+        field.getDefaultValue.asInstanceOf[EnumValueDescriptor].getFullName;
+      case FieldDescriptor.JavaType.STRING =>
+        "\""+field.getDefaultValue.toString+"\""
+      case _ => field.getDefaultValue.toString
+    }
+  }
+
   def printMessage(topLevel: Boolean)(message: Descriptor,
                                       printer: FunctionalPrinter): FunctionalPrinter = {
     val requiredFields = message.fields
@@ -216,7 +226,13 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
                   s"${initRepeatedFldIfNull(field)} return ${field.getName};")
             )
             .when(!field.isRepeated)(p => p
-              .addMethod(s"get${field.upperJavaName}", s"${field.javaTypeName}", "", s"return ${field.getName};")
+              .addMethod(s"get${field.upperJavaName}", s"${field.javaTypeName}", "",
+                if (field.hasDefaultValue) {
+                  s"return _has_${field.getName} ? ${field.getName} : ${defaultValueToString(field)};"
+                } else {
+                  s"return ${field.getName};"
+                }
+              )
             )
             .when(field.isRepeated || !field.isOptional)(p =>
                p.addMethod(s"set${field.upperJavaName}${if (field.isRepeated) "ArrayList" else ""}",
@@ -224,7 +240,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
                   s"${field.javaTypeName} val",
                   s"this.${field.getName} = val; return this;"))
               .when(field.isOptional)(p => p
-                .addMethod(s"has${field.upperJavaName}", s"boolean", s"", s"return _has_${field.getName};")
+                .addMethod(s"has${field.upperJavaName}", s"boolean", s"", if (field.hasDefaultValue) "return true;" else s"return _has_${field.getName};")
                   .addMethod(s"clear${field.upperJavaName}", "void", s"", s"this.${field.getName} = ${defaultValue(field)}; _has_${field.getName} = false;")
                   .addMethod(s"set${field.upperJavaName}", message.nameSymbol, s"${field.javaTypeName} val", s"this.${field.getName} = val; _has_${field.getName} = true; return this;"))
               .when(field.isRepeated)(p =>

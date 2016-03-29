@@ -3,7 +3,7 @@
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
     <option name="MAIN_CLASS_NAME" value="com.trueaccord.scalapb.ScalaPBC" />
     <option name="VM_PARAMETERS" value="" />
-    <option name="PROGRAM_PARAMETERS" value="$PROJECT_DIR$/../fanzcall/cn1/src/com/fanzcall/interfaces/FanZCall.proto -I $PROJECT_DIR$/../fanzcall/cn1/src/com/fanzcall/interfaces --fzjava_out $PROJECT_DIR$/../fanzcall/cn1/src" />
+    <option name="PROGRAM_PARAMETERS" value="$PROJECT_DIR$/../fanzcall/modules/JavaProtobufDomain/src/com/fanzcall/interfaces/FanZCall.proto -I $PROJECT_DIR$/../fanzcall/modules/JavaProtobufDomain/src/com/fanzcall/interfaces --fzjava_out $PROJECT_DIR$/../fanzcall/modules/JavaProtobufDomain/src" />
     <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
     <option name="ALTERNATIVE_JRE_PATH" />
