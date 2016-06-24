@@ -524,7 +524,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   }
 
 
-  val javaImportList = Seq("java.utiфl.ArrayList", "java.util.Collections", "java.io.IOException", "com.ponderingpanda.protobuf.*")
+  val javaImportList = Seq("java.util.ArrayList", "java.util.Collections", "java.io.IOException", "com.ponderingpanda.protobuf.*")
 
   def javaFileHeader(file: FileDescriptor): FunctionalPrinter = {
     new FunctionalPrinter().addM(
