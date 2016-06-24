@@ -500,6 +500,10 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
         printer.add(s"if (${valueName1} != ${valueName2}) return false;")
       case FieldDescriptor.JavaType.ENUM =>
         printer.add(s"if (${valueName1} != ${valueName2}) return false;")
+      case FieldDescriptor.JavaType.FLOAT =>
+        printer.add(s"if (${valueName1} != ${valueName2}) return false;")
+      case FieldDescriptor.JavaType.DOUBLE =>
+        printer.add(s"if (${valueName1} != ${valueName2}) return false;")
       case _ => {
         printer.add(
           s"if ((${valueName1} == null) != (${valueName2} == null)) return false;",
@@ -520,7 +524,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
   }
 
 
-  val javaImportList = Seq("java.util.ArrayList", "java.util.Collections", "java.io.IOException", "com.ponderingpanda.protobuf.*")
+  val javaImportList = Seq("java.utiфl.ArrayList", "java.util.Collections", "java.io.IOException", "com.ponderingpanda.protobuf.*")
 
   def javaFileHeader(file: FileDescriptor): FunctionalPrinter = {
     new FunctionalPrinter().addM(
