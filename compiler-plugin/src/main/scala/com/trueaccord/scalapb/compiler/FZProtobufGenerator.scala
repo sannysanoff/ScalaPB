@@ -343,9 +343,9 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
            |}
            """.stripMargin)
 
-      .add("public String toStringImpl(final int indent) {")
+      .add("public String toStringImpl(final int indent, String prefix) {")
       .indent
-      .add("String res = ProtoUtil.repeatStr(indent, \"  \") + \"{ " + message.nameSymbol + "\\n\";")
+      .add("String res = ProtoUtil.repeatStr(indent, \"  \") + prefix + \"{ " + message.nameSymbol + "\\n\";")
       .print(message.fields) {
         case (field, p) => {
           p
@@ -359,12 +359,12 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
       .add("}")
       .newline
 
+      .add("public String superToString() { return super.toString(); }")
+      .add("public int superHashCode() { return super.hashCode(); }")
+      .newline
+
       .add("@Override")
-      .add("public String toString() {")
-      .indent
-      .add("return toStringImpl(0);")
-      .outdent
-      .add("}")
+      .add("public String toString() { return toStringImpl(0,\"\"); }")
 
       .newline
       .add("@Override")
@@ -517,7 +517,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
     def space = s"$q${strValueName}=$q"
     field.getJavaType match {
       case FieldDescriptor.JavaType.MESSAGE => {
-        printer.add(s"${prefix}res += $valueName.toStringImpl(indent+2) + $q\\n$q;${suffix}")
+        printer.add(s"${prefix}res += $valueName.toStringImpl(indent+2, $q${strValueName}=$q) + $q\\n$q;${suffix}")
       } case _ =>
         printer.add(s"${prefix}res += ProtoUtil.repeatStr(indent+1, $q  $q) + $space + $valueName + $q\\n$q;${suffix}")
     }
