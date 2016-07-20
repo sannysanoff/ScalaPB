@@ -337,7 +337,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
            |}
            |
            |public ${message.nameSymbol} cloneIt() {
-           |    ${message.nameSymbol} that = new ${message.nameSymbol}();
+           |    ${message.nameSymbol} that = ${message.nameSymbol}.messageFactory != null ? ${message.nameSymbol}.messageFactory.newInstance() : new ${message.nameSymbol}();
            |    that.mergeFrom(this);
            |    return that;
            |}
