@@ -296,7 +296,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
               case FieldDescriptor.JavaType.ENUM =>
                 p.add(s"set${field.upperJavaName}(${field.singleJavaTypeName}.fromValue(in.readInt32()));")
               case FieldDescriptor.JavaType.MESSAGE =>
-                p.add(s"set${field.upperJavaName}(new ${field.singleJavaTypeName}());")
+                p.add(s"set${field.upperJavaName}(${field.singleJavaTypeName}.messageFactory != null ? ${field.singleJavaTypeName}.messageFactory.newInstance() : new ${field.singleJavaTypeName}());")
                   .add(s"in.readMessage(${field.getName});")
               case _ =>
                 p.add(s"set${field.upperJavaName}(in.read${Types.capitalizedType(field.getType)}());")
@@ -304,7 +304,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
               .add("break;"))
           .when(field.isRepeated && field.getJavaType == FieldDescriptor.JavaType.MESSAGE)(p => p
             .add(initRepeatedFldIfNull(field))
-            .add(s"{${field.singleJavaTypeName} message = new ${field.singleJavaTypeName}();")
+            .add(s"{${field.singleJavaTypeName} message = ${field.singleJavaTypeName}.messageFactory != null ? ${field.singleJavaTypeName}.messageFactory.newInstance() : new ${field.singleJavaTypeName}();")
             .add("in.readMessage(message);")
             .add(s"add${field.upperJavaName}(message);}")
             .add("break;")
