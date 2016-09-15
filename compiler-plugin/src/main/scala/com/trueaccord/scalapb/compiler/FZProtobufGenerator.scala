@@ -242,7 +242,7 @@ class FZProtobufGenerator(val params: GeneratorParams) extends FZDescriptorPimps
               .when(field.isOptional)(p => p
                 .addMethod(s"has${field.upperJavaName}", s"boolean", s"", if (field.hasDefaultValue) "return true;" else s"return _has_${field.getName};")
                   .addMethod(s"clear${field.upperJavaName}", "void", s"", s"this.${field.getName} = ${defaultValue(field)}; _has_${field.getName} = false;")
-                  .addMethod(s"set${field.upperJavaName}", message.nameSymbol, s"${field.javaTypeName} val", s"this.${field.getName} = val; _has_${field.getName} = true; return this;"))
+                  .addMethod(s"set${field.upperJavaName}", message.nameSymbol, s"${field.javaTypeName} val", s"this.${field.getName} = val; _has_${field.getName} = ${if (defaultValue(field) == "null") "val != null"; else "true"}; return this;"))
               .when(field.isRepeated)(p =>
                 p.addMethod(s"add${field.upperJavaName}", message.nameSymbol, s"${field.singleJavaTypeName} item",
                       s"${initRepeatedFldIfNull(field)} this.${field.getName}.add(item); return this;")
