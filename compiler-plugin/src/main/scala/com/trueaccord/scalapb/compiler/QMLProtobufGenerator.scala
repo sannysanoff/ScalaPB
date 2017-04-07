@@ -37,19 +37,13 @@ class QMLProtobufGenerator(val params: GeneratorParams) extends QMLDescriptorPim
   def printEnum(e: EnumDescriptor, p: FunctionalPrinter): FunctionalPrinter = {
     val name = e.nameSymbol
     p
-      .add("public enum " + e.getName + " {")
+      .add("enum " + e.getName + " {")
       .indent
       .print(e.getValues) {
         case (v, p) => p.add(
-          s"${v.getName}(${v.getNumber}),")
+          s"${v.getFullName.split("\\.").mkString("_")} = ${v.getNumber},")
       }
       .add(";")
-      .newline
-      .add("public final int val;")
-      .newline
-      .add(s"${e.getName} (int val) { this.val = val; }")
-      .newline
-      .addStaticMethod("fromValue", s"${e.getName}", "int i", s"for (${e.getName} e : values()) { if (e.val == i) return e; } return null;")
       .outdent
       .add("}")
   }
@@ -136,10 +130,8 @@ class QMLProtobufGenerator(val params: GeneratorParams) extends QMLDescriptorPim
       .add("/**")
       .add(s"  * ${message.getName}")
       .add("  */")
-      .add(s"public ${if (topLevel) "" else "static "}class ${message.nameSymbol} implements Message, java.io.Serializable {")
+      .add(s"public ${if (topLevel) "" else "static "}class ${message.nameSymbol} : public {")
       .indent
-
-      .add(s"public static MessageFactory<${message.nameSymbol}> messageFactory;")
 
       .print(message.fields) {
         case (field, p) => {
